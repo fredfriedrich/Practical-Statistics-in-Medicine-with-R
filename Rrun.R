@@ -3,30 +3,72 @@
 # Dataset: asma vs controle (300 pacientes)                  # contexto do banco
 # ==========================================================  # separador visual
 
+# ----------------------------------------------------------  # seção de diretório
+# 0) DEFINIR O DIRETÓRIO DE TRABALHO                          # onde estão seu .R e .xlsx
+# ----------------------------------------------------------  # separador
+
+setwd("/Users/fredericofriedrich/Desktop/Data Analyst : R/Practical Statistics in Medicine with R")  # defina seu diretório
+getwd()                        # confirma o diretório atual
+list.files()                   # lista arquivos na pasta (confira se o .xlsx está aqui)
+
 # ----------------------------------------------------------  # seção de pacotes
-# 0) INSTALAÇÃO E CARREGAMENTO DE PACOTES                    # alunos de 1ª vez no R
+# 1) INSTALAÇÃO E CARREGAMENTO DE PACOTES                    # alunos de 1ª vez no R
 # ----------------------------------------------------------  # separador
 
 install.packages("readxl")        # instala pacote para ler planilhas Excel (.xlsx)
 install.packages("dplyr")         # instala pacote para manipulação e resumo de dados
 install.packages("ggplot2")       # instala pacote para criar gráficos
+# (opcionais para importações diversas, se desejar demonstrar futuramente)
+# install.packages("haven")       # para SPSS/Stata/SAS
+# install.packages(c("DBI","RSQLite"))  # para bancos SQL locais (SQLite)
 
 library(readxl)                   # carrega o readxl (leitura de .xlsx)
 library(dplyr)                    # carrega o dplyr (gramática de dados)
 library(ggplot2)                  # carrega o ggplot2 (visualização)
 
-# ----------------------------------------------------------  # seção de importação
-# 1) IMPORTAR O BANCO DE DADOS                                # ler o arquivo .xlsx
+# ----------------------------------------------------------  # seção de importação de exemplos
+# 2) MODELOS DE IMPORTAÇÃO DE BANCOS DE DADOS                 # exemplos comuns no ambiente médico
+# ----------------------------------------------------------  # separador
+# Estes exemplos NÃO serão executados durante a aula.
+# Servem apenas para ilustrar como ler diferentes formatos de arquivos.
+
+# ---- Leitura de arquivos CSV (separados por vírgula) ----
+# dados <- read.csv("arquivo.csv", sep = ",", header = TRUE)
+
+# ---- Leitura de arquivos delimitados por ponto e vírgula (ex.: exportações do REDCap) ----
+# dados <- read.csv2("arquivo.csv", sep = ";", header = TRUE)
+
+# ---- Leitura de arquivos TXT (tabulados) ----
+# dados <- read.table("arquivo.txt", sep = "\t", header = TRUE)
+
+# ---- Leitura de arquivos SAV (SPSS) ----
+# library(haven)
+# dados <- read_sav("arquivo.sav")
+
+# ---- Leitura de arquivos DTA (Stata) ----
+# library(haven)
+# dados <- read_dta("arquivo.dta")
+
+# ---- Leitura de arquivos RDS (formato nativo do R) ----
+# dados <- readRDS("arquivo.rds")
+
+# ---- Leitura de bancos SQL (via DBI + RSQLite) ----
+# library(DBI)
+# con <- dbConnect(RSQLite::SQLite(), "banco.sqlite")
+# dados <- dbReadTable(con, "tabela_nome")
+# dbDisconnect(con)
+
+# ----------------------------------------------------------  # seção de importação real
+# 3) IMPORTAR O BANCO DE DADOS                                # ler o arquivo da aula
 # ----------------------------------------------------------  # separador
 
-# garanta que o arquivo esteja na mesma pasta do script ou ajuste o caminho completo:
-dados <- read_excel("/Users/fredericofriedrich/Downloads/asthma_dataset_2025-10-15.xlsx", sheet = "data")   # importa a planilha "data"
+dados <- read_excel("asthma_dataset_2025-10-15.xlsx", sheet = "data")   # importa a planilha "data"
 
 head(dados)                        # visualiza as 6 primeiras linhas para checagem rápida
 View(dados)                        # abre a base em visualização tipo planilha no RStudio
 
 # ==========================================================  # seção de exploração
-# 2) EXPLORAÇÃO INICIAL DO BANCO DE DADOS                    # conhecer a estrutura
+# 4) EXPLORAÇÃO INICIAL DO BANCO DE DADOS                    # conhecer a estrutura
 # ==========================================================  # separador
 
 names(dados)                       # lista os nomes das variáveis (colunas)
@@ -36,7 +78,7 @@ dim(dados)                         # retorna número de linhas (n) e colunas (p)
 colSums(is.na(dados))              # conta quantos NA existem em cada coluna
 
 # ==========================================================  # seção de resumos por grupo
-# 3) ESTATÍSTICAS RESUMIDAS POR GRUPO                        # comparar asma vs controle
+# 5) ESTATÍSTICAS RESUMIDAS POR GRUPO                        # comparar asma vs controle
 # ==========================================================  # separador
 
 table(dados$group)                 # n de participantes por grupo (asma vs controle)
@@ -67,7 +109,7 @@ dados %>%                          # novo fluxo para proporções
 table(dados$group, dados$sex)      # tabela cruzada (grupo x sexo) em contagens
 
 # ==========================================================  # seção de descritiva geral
-# 4) ESTATÍSTICA DESCRITIVA GERAL                            # medidas simples
+# 6) ESTATÍSTICA DESCRITIVA GERAL                            # medidas simples
 # ==========================================================  # separador
 
 mean(dados$age_years)              # média da idade (todos os participantes)
@@ -90,7 +132,7 @@ prop.table(                                        # calcula proporções por li
 ) * 100                                            # converte proporções em %
 
 # ==========================================================  # seção de gráficos
-# 5) GRÁFICOS SIMPLES                                        # visualizações básicas
+# 7) GRÁFICOS SIMPLES                                        # visualizações básicas
 # ==========================================================  # separador
 
 boxplot(bmi ~ group, data = dados,                  # boxplot: IMC (y) por grupo (x)
@@ -111,7 +153,7 @@ ggplot(dados, aes(x = group, fill = sex)) +         # mapeia grupo no x e sexo n
   theme_bw()                                        # tema em preto-e-branco (limpo)
 
 # ==========================================================  # seção de tabelas & proporções
-# 6) TABELAS CRUZADAS E PROPORÇÕES                          # frequências relativas
+# 8) TABELAS CRUZADAS E PROPORÇÕES                          # frequências relativas
 # ==========================================================  # separador
 
 table(dados$sex)                                    # contagem simples de sexo
@@ -119,13 +161,13 @@ table(dados$group, dados$allergic_rhinitis)         # tabela cruzada grupo x rin
 prop.table(table(dados$group, dados$allergic_rhinitis), 1) * 100   # % por linha (grupo)
 
 # ==========================================================  # seção de testes
-# 7) TESTES ESTATÍSTICOS BÁSICOS                            # inferência introdutória
+# 9) TESTES ESTATÍSTICOS BÁSICOS                            # inferência introdutória
 # ==========================================================  # separador
 
-shapiro.test(dados$age_years[1:500])                # teste de normalidade (Shapiro); usa <=500 obs
-hist(dados$age_years)           # histograma da idade
-qqnorm(dados$age_years)         # gráfico Q-Q (quantis teóricos vs observados)
-qqline(dados$age_years, col="red")  # linha de referência da normalidade
+shapiro.test(dados$age_years[1:500])                # teste de normalidade (Shapiro); usa <=500 obs (LIMITADO)
+hist(dados$age_years)                               # histograma da idade
+qqnorm(dados$age_years)                             # gráfico Q-Q (quantis teóricos vs observados)
+qqline(dados$age_years, col="red")                  # linha de referência da normalidade
 
 t.test(fev1_percent_predicted ~ group, data = dados) # teste t: compara FEV1% entre grupos
 wilcox.test(bmi ~ group, data = dados)              # Mann-Whitney: compara IMC entre grupos (não paramétrico)
@@ -141,7 +183,7 @@ cor.test(dados$fev1_percent_predicted,              # correlação entre FEV1%
          dados$age_years, method = "pearson")       # e idade via Pearson (assume normalidade)
 
 # ==========================================================  # seção de modelos logísticos
-# 8) REGRESSÃO LOGÍSTICA                                    # desfecho binário (asma vs controle)
+# 10) REGRESSÃO LOGÍSTICA                                   # desfecho binário (asma vs controle)
 # ==========================================================  # separador
 
 dados$asma <- ifelse(dados$group == "Asthma", 1, 0) # cria variável binária: 1=asma, 0=controle
@@ -150,8 +192,8 @@ modelo_log1 <- glm(asma ~ allergic_rhinitis,        # modelo logístico simples:
                    data = dados, family = "binomial")  # família binomial = regressão logística
 summary(modelo_log1)                                 # exibe coeficientes (log-OR), erros, p-valores
 round(
-exp(cbind(OR = coef(modelo_log1),                   # transforma coeficientes em OR
-          confint(modelo_log1))), 2)                    # e calcula IC95% das OR
+  exp(cbind(OR = coef(modelo_log1),                  # transforma coeficientes em OR
+            confint(modelo_log1))), 2)              # e calcula IC95% das OR (arredonda em 2 casas)
 
 modelo_log2 <- glm(asma ~ allergic_rhinitis +       # modelo logístico ajustado (controle de confusão)
                      age_years + sex + bmi,         # ajusta por idade, sexo e IMC
@@ -163,7 +205,7 @@ exp(cbind(OR = coef(modelo_log2),                   # OR ajustadas
 # Interpretação: OR > 1 aumenta chance de asma; OR < 1 reduz chance de asma  # dica didática
 
 # ==========================================================  # seção de modelos lineares
-# 9) REGRESSÃO LINEAR                                       # desfecho numérico (FEV1% previsto)
+# 11) REGRESSÃO LINEAR                                      # desfecho numérico (FEV1% previsto)
 # ==========================================================  # separador
 
 modelo_lin1 <- lm(fev1_percent_predicted ~ bmi,     # modelo linear simples: FEV1% ~ IMC
@@ -186,7 +228,7 @@ abline(modelo_lin1, col = "black", lwd = 2)         # adiciona a reta do modelo 
 # p-valor testa se o coeficiente é diferente de 0; R² indica proporção explicada     # interpretação
 
 # ==========================================================  # exercícios
-# 10) EXERCÍCIOS PRÁTICOS                                   # para os alunos praticarem
+# 12) EXERCÍCIOS PRÁTICOS                                   # para os alunos praticarem
 # ==========================================================  # separador
 
 # 1. Calcule a média e a mediana da idade por grupo.         # exercício de resumo por grupo
